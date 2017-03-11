@@ -52,6 +52,8 @@ m4_define([b4_lac_flag],
                  [none], [[0]], [[1]])])
 
 m4_include(b4_pkgdatadir/[c.m4])
+m4_define([b4_yaxx],[$1])
+m4_define([b4_not_yaxx],[])
 
 ## ---------------- ##
 ## Default values.  ##
@@ -331,7 +333,11 @@ m4_if(b4_api_prefix, [yy], [],
 #define yydebug         ]b4_prefix[debug
 #define yynerrs         ]b4_prefix[nerrs
 ]]b4_pure_if([], [[
-#define yylval          ]b4_prefix[lval
+#define yylval          ]b4_prefix[lval]b4_yaxx([
+#define yytext  	]b4_prefix[text
+#define YYYAXX_XML  "b4_prefix[]yaxx.xml"
+#define YYYAXX_DTD  "b4_prefix[]yaxx.dtd"
+])[
 #define yychar          ]b4_prefix[char]b4_locations_if([[
 #define yylloc          ]b4_prefix[lloc]])]))[
 
@@ -420,6 +426,10 @@ typedef short int yytype_int16;
 /* The parser invokes alloca or malloc; define the necessary symbols.  */]dnl
 b4_push_if([], [b4_lac_if([], [[
 
+]b4_yaxx([
+#define XML_ALLOC(X) malloc(X)
+#define XML_FREE(X) free(X)
+])[
 # ifdef YYSTACK_USE_ALLOCA
 #  if YYSTACK_USE_ALLOCA
 #   ifdef __GNUC__
@@ -494,7 +504,7 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 union yyalloc
 {
   yytype_int16 yyss_alloc;
-  YYSTYPE yyvs_alloc;]b4_locations_if([
+  YYSTYPE yyvs_alloc;]b4_yaxx([char *yyxs_alloc;])[]b4_locations_if([
   YYLTYPE yyls_alloc;])[
 };
 
@@ -505,10 +515,10 @@ union yyalloc
    N elements.  */
 ]b4_locations_if(
 [# define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE) + sizeof (YYLTYPE)) \
+     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE) + sizeof (YYLTYPE) ]b4_yaxx([+ sizeof(char*) ])[) \
       + 2 * YYSTACK_GAP_MAXIMUM)],
 [# define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE)) \
+     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE) ]b4_yaxx([+ sizeof(char*) ])[) \
       + YYSTACK_GAP_MAXIMUM)])[
 
 # define YYCOPY_NEEDED 1
@@ -580,19 +590,27 @@ static const ]b4_int_type_for([b4_translate])[ yytranslate[] =
   ]b4_translate[
 };
 
+]b4_not_yaxx([
 #if ]b4_api_PREFIX[DEBUG
+])[
 ]b4_integral_parser_table_define([rline], [b4_rline],
      [[YYRLINE[YYN] -- Source line where rule number YYN was defined.]])[
+]b4_not_yaxx([
 #endif
+])[
 
+]b4_not_yaxx([
 #if ]b4_api_PREFIX[DEBUG || YYERROR_VERBOSE || ]b4_token_table_flag[
+])[
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
   ]b4_tname[
 };
+]b4_not_yaxx([
 #endif
+])
 
 # ifdef YYPRINT
 /* YYTOKNUM[NUM] -- (External) token number corresponding to the
@@ -1366,7 +1384,194 @@ b4_function_define([[yyparse]], [[int]], b4_parse_param)[
   [[[YYSTYPE const *yypushed_val]], [[yypushed_val]]]b4_locations_if([,
   [[[YYLTYPE *yypushed_loc]], [[yypushed_loc]]]])])m4_ifset([b4_parse_param], [,
   b4_parse_param]))], [[
+]b4_yaxx([
+extern char *b4_prefix[]text;
+// Yijun Yu: utility functions -----------------------------------------------
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stddef.h>
+/// replace character terminals into symbolic terminals
+static char *YYTNAME(int r)
+{
+  static char yytname_buf[[8]];
+  if (strlen(yytname[[r]])==3 && yytname[[r]][[0]] == '\'' && yytname[[r]][[2]] == '\'') 
+  { 
+        sprintf(yytname_buf, "CHAR%d", (int)yytname[[r]][[1]]);
+        return yytname_buf;
+  } 
+  else if (strlen(yytname[[r]])>=2 && yytname[[r]][[0]] == 64 )
+  {
+    strcpy(yytname_buf,"ACTION");
+    strcat(yytname_buf,&(yytname[[r]][[1]]));
+    return yytname_buf;
+  }
 
+  return (char *)yytname[[r]];
+}
+#include <stdio.h>
+#include <stddef.h>
+static char *yytext_buf = NULL;
+
+/// replace a special character in the text into an entity
+static
+void replace_entity(char c, char *s)
+{
+    char *buf;
+    char *i;
+    int len, l;
+    i = yytext_buf;
+    do {
+        i =  (char *)index(i, c);
+        if (i) {
+            l = i - yytext_buf;
+            len = strlen(yytext_buf) + strlen(s) - 1;
+            //buf = (char*)YYSTACK_ALLOC(1000000);
+            buf = (char*)YYSTACK_ALLOC(len + 1); // Myo M Thein
+            if (l>0) {
+#if 1 // Myo M Thein
+		strncpy(buf, yytext_buf, l);
+#else
+		int t = 0;
+		while (t < l) {
+			buf[t] = yytext_buf[t]; 
+			t++;
+		}
+                buf[t] = 0;
+#endif
+            } else {
+                buf[[0]] = 0;
+            }
+            strcat(buf, s); 
+            strncat(buf, yytext_buf + l + 1, strlen(yytext_buf) - l); 
+            buf[[len]] = 0;
+            YYSTACK_FREE(yytext_buf); 
+            //yytext_buf = buf;
+	    memcpy(yytext_buf,buf,len+1);
+        i++;
+        if (*i=='\0')
+            i=NULL;
+        }
+    } while (i);
+}
+
+/// replace the special characters in the text into entities 
+static
+char* xml_encode( char ch)
+{
+  static char text[[2]];
+    switch(ch)
+    {
+    case '&':
+        return ( "&amp;");
+        break;
+    case '>':
+        return ( "&gt;");
+        break;
+    case '<' :
+        return ( "&lt;" );
+        break;
+    case  '\"':
+        return ( "&quot;");
+        break;
+    case '\'':
+        return ( "&apos;");
+        break;
+    default:
+        text[[0]]=ch;
+        text[[1]]=0;
+        return text;
+        break;
+    }
+}
+
+static
+void replace_special_entities(char *text,char *text_out)
+{
+  int i,lg;
+    if (!text) { strcpy(text_out,"??");return ; }
+    lg = strlen(text);
+    strcpy(text_out,"");
+    for (i=0;i<lg;i++)
+    {
+       strcat(text_out,xml_encode(text[[i]]));
+    }
+}
+static
+void generate_xml_output(char **yyxsp,char **yyxs)
+{
+#ifndef YYYAXX_XML 
+#define YYYAXX_XML  "yaxx.xml"
+#endif
+#ifndef YYYAXX_DTD
+#define YYYAXX_DTD "yaxx.dtd"
+#endif
+       int r, i, j;
+       char buf[[2000]];
+       int old_rule = 0;
+       FILE *stdout = fopen(YYYAXX_XML, "w");
+       char *p = *yyxsp + 6;
+#if 0
+       char *v = strsep(&p, ">");
+       strcpy(buf, v);
+#else
+	   i = 0;
+	   while (p[[i]]!='>') {
+		buf[[i]] = p[[i]];
+		i++;
+	   }
+	   buf[[i]]  = 0;
+#endif
+       /// Generating the XML document 
+       /// version 
+       fprintf(stdout,"<?xml version=\"1.0\"?>\n");
+       /// DTD reference
+       fprintf(stdout,"<?xml-stylesheet type=\"text/xsl\" href=\"yaxx.xsl\"?>");
+       fprintf(stdout,"<!DOCTYPE %s SYSTEM \"" YYYAXX_DTD "\">\n", buf);
+       /// inserting name space before the XML data
+       fprintf(stdout,"<yaxx:%s xmlns:yaxx=\"urn:YAcc-Xml-eXtension\"%s\n", buf,
+            yyxs[[1]]+i+6); //ffprintf(stdout,f, "%s\n", yyxs[[1]]);
+       /// Generating the document type definition (DTD) 
+       stdout = fopen(YYYAXX_DTD , "w");
+       /// DTD for non-terminals
+       for (r = 2; r < sizeof(yyr1)/sizeof(unsigned short); r++) 
+       {
+        j = yyr1[[r]];
+        if (j != old_rule) {
+        	if (old_rule!=0)
+        		fprintf(stdout,")>\n");
+	        fprintf(stdout,"<!ELEMENT %s (", YYTNAME(yyr1[[r]]));
+        } else
+	    	fprintf(stdout," | ");
+        if (yyr2[[r]]==0) 
+           fprintf(stdout,"EMPTY");
+        else {
+		/*
+        	int multiple = 0;
+            for (i = yyprhs[[r]]; yyrhs[[i]] > 0 ; i++)
+               if (i!=yyprhs[[r]]) {
+               	multiple = 1; break;
+               }
+       		if (multiple) fprintf(stdout,"(");
+            for (i = yyprhs[[r]]; yyrhs[[i]] > 0 ; i++) {
+               if (i!=yyprhs[[r]])
+                   fprintf(stdout,",");
+               fprintf(stdout,"%s", YYTNAME(yyrhs[[i]]));
+            }
+       		if (multiple) fprintf(stdout,")");
+		 */
+         }
+         old_rule = j;
+       }
+       fprintf(stdout,")>\n");
+       /// DTD for terminals
+       for (r = 3; r < YYNTOKENS; r++) 
+       {
+            fprintf(stdout,"<!ELEMENT %s (#PCDATA)>\n", YYTNAME(r));
+       }
+    
+}
+])[
 
 /*----------.
 | yyparse.  |
@@ -1398,7 +1603,26 @@ b4_function_define([[yyparse]], [[int]], b4_parse_param)[
   YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
 #endif
 
+]b4_yaxx([
+
+  /* The tags stack. */
+  char *yyxsa[[YYINITDEPTH]];
+  char **yyxs = yyxsa;
+  char **yyxsp;
+])[
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N)]b4_locations_if([, yylsp -= (N)])[)
+]b4_yaxx([
+#include <stdio.h>
+#include <string.h>
+#undef __GNUC_PREREQ
+#define __GNUC_PREREQ(maj, min) (maj < 4)
+#include <stdlib.h>
+#include <stddef.h>
+static char * yyxml_str=NULL; // for XML
+// for id attribute generation (by William Candillon)
+int _id = 0; 
+char str[[256]];
+])[
 
   /* The number of symbols on the RHS of the reduced rule.
      Keep to zero when no symbol should be popped.  */
@@ -1410,7 +1634,9 @@ b4_function_define([[yyparse]], [[int]], b4_parse_param)[
       goto yyread_pushed_token;
     }]])[
 
-  yyssp = yyss = yyssa;
+  yyssp = yyss = yyssa;]b4_yaxx([
+  yyxsp = yyxs = yyxsa;
+])[
   yyvsp = yyvs = yyvsa;]b4_locations_if([[
   yylsp = yyls = yylsa;]])[
   yystacksize = YYINITDEPTH;]b4_lac_if([[
@@ -1460,7 +1686,7 @@ b4_locations_if([[  yylsp[0] = ]b4_push_if([b4_pure_if([*])yypushed_loc], [yyllo
            these so that the &'s don't force the real ones into
            memory.  */
         YYSTYPE *yyvs1 = yyvs;
-        yytype_int16 *yyss1 = yyss;]b4_locations_if([
+        yytype_int16 *yyss1 = yyss;]b4_yaxx([ char **yyxs1 = yyxs;])[]b4_locations_if([
         YYLTYPE *yyls1 = yyls;])[
 
         /* Each stack pointer address is followed by the size of the
@@ -1469,9 +1695,9 @@ b4_locations_if([[  yylsp[0] = ]b4_push_if([b4_pure_if([*])yypushed_loc], [yyllo
            be undefined if yyoverflow is a macro.  */
         yyoverflow (YY_("memory exhausted"),
                     &yyss1, yysize * sizeof (*yyssp),
-                    &yyvs1, yysize * sizeof (*yyvsp),]b4_locations_if([
+                    &yyvs1, yysize * sizeof (*yyvsp),]b4_yaxx([&yyxs1, yysize * sizeof (*yyxsp),])[]b4_locations_if([
                     &yyls1, yysize * sizeof (*yylsp),])[
-                    &yystacksize);
+                    &yystacksize);]b4_yaxx([yyxs = yyxs1;])[
 ]b4_locations_if([
         yyls = yyls1;])[
         yyss = yyss1;
@@ -1495,7 +1721,7 @@ b4_locations_if([[  yylsp[0] = ]b4_push_if([b4_pure_if([*])yypushed_loc], [yyllo
         if (! yyptr)
           goto yyexhaustedlab;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
-        YYSTACK_RELOCATE (yyvs_alloc, yyvs);]b4_locations_if([
+        YYSTACK_RELOCATE (yyvs_alloc, yyvs);]b4_yaxx([YYSTACK_RELOCATE (yyxs_alloc, yyxs);])[]b4_locations_if([
         YYSTACK_RELOCATE (yyls_alloc, yyls);])[
 #  undef YYSTACK_RELOCATE
         if (yyss1 != yyssa)
@@ -1505,7 +1731,7 @@ b4_locations_if([[  yylsp[0] = ]b4_push_if([b4_pure_if([*])yypushed_loc], [yyllo
 #endif /* no yyoverflow */
 
       yyssp = yyss + yysize - 1;
-      yyvsp = yyvs + yysize - 1;]b4_locations_if([
+      yyvsp = yyvs + yysize - 1;]b4_yaxx([yyxsp = yyxs + yysize - 1;])[]b4_locations_if([
       yylsp = yyls + yysize - 1;])[
 
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
@@ -1570,7 +1796,33 @@ yyread_pushed_token:]])[
     }
   else
     {
-      yytoken = YYTRANSLATE (yychar);
+      yytoken = YYTRANSLATE (yychar);]b4_yaxx([
+{ // Yijun Yu: process the terminal
+      yyxml_str = (char *) XML_ALLOC(200);
+      strcpy(yyxml_str, "<yaxx:");
+      strcat(yyxml_str, YYTNAME(yytoken));      
+#if 1 //William Candillon
+      strcat(yyxml_str, " id=\"");
+      sprintf(str, "%x", _id);
+      strcat(yyxml_str, str);
+      strcat(yyxml_str, "\"");
+      _id++;
+#endif
+      strcat(yyxml_str, ">");
+      if (yytoken < YYNTOKENS) {
+	  if (yytext) {
+		  char *tmp;
+		  tmp=(char *)YYSTACK_ALLOC(6*strlen(yytext)+1); 
+		  replace_special_entities(yytext,tmp);
+		  strcat(yyxml_str, tmp);
+		  YYSTACK_FREE(tmp);
+	  }
+      }
+      strcat(yyxml_str, "</yaxx:");
+      strcat(yyxml_str, YYTNAME(yytoken));
+      strcat(yyxml_str, ">\n");
+    }
+])[
       YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
     }
 
@@ -1607,6 +1859,10 @@ yyread_pushed_token:]])[
 
   yystate = yyn;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+]b4_yaxx([
+  *++yyxsp = yyxml_str;
+  yyxml_str = 0;
+])[
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 ]b4_locations_if([  *++yylsp = yylloc;])[
@@ -1654,6 +1910,53 @@ yyreduce:
     if (yychar_backup != yychar)
       YY_LAC_DISCARD ("yychar change");
   }]], [[
+]b4_yaxx([
+  {
+      int len = 0;
+      int alloc_len=0;
+      int n = 0;
+      int yyi;
+      for (yyi = 0; yyi < yylen; yyi++)
+      {
+          int l;
+          char * yyxml_str = yyxsp[[yyi+1-yylen]];
+          if (yyxml_str==NULL) {
+            l = 0;
+          } else
+            l = strlen(yyxml_str);
+          len += l;
+	  n++;
+      }
+      alloc_len =len+100+2*strlen(YYTNAME(yyr1[[yyn]]));
+      yyxml_str = (char *) XML_ALLOC(alloc_len);
+      strcpy(yyxml_str, "<yaxx:");
+      strcat(yyxml_str, YYTNAME(yyr1[[yyn]]));
+#if 1 //William Candillon
+      strcat(yyxml_str, " id=\"");
+      sprintf(str, "%x", _id);
+      strcat(yyxml_str, str);
+      strcat(yyxml_str, "\"");
+      _id++;
+#endif
+      strcat(yyxml_str, ">\n");
+      for (yyi = 0; yyi < yylen; yyi++)
+      {
+          char * xml_str = yyxsp[[yyi+1-yylen]];
+          if (xml_str) {
+              strcat(yyxml_str, xml_str); 
+              XML_FREE(xml_str);
+              yyxsp[[yyi+1-yylen]] = NULL;
+          } else {
+            fprintf(stderr, "Warning! the %d-th argument is empty", yyi+1);
+          }
+      }
+      strcat(yyxml_str, "</yaxx:");
+      strcat(yyxml_str, YYTNAME(yyr1[[yyn]]));
+      strcat(yyxml_str, ">\n");
+      yyxsp -= n;
+      *++yyxsp = yyxml_str;
+      yyxml_str = NULL;
+    }])[
   switch (yyn)
     {
       ]b4_user_actions[
@@ -1829,6 +2132,10 @@ yyerrlab1:
   YY_LAC_DISCARD ("error recovery");]])[
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+]b4_yaxx([
+  *++yyxsp = yyxml_str;
+  yyxml_str = 0;
+])[
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 ]b4_locations_if([[
@@ -1848,7 +2155,7 @@ yyerrlab1:
 /*-------------------------------------.
 | yyacceptlab -- YYACCEPT comes here.  |
 `-------------------------------------*/
-yyacceptlab:
+yyacceptlab:]b4_yaxx([generate_xml_output(--yyxsp,yyxs);])[
   yyresult = 0;
   goto yyreturn;
 
