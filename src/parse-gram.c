@@ -2945,11 +2945,11 @@ add_param (param_type type, char *decl, location loc)
     /* Strip the surrounding '{' and '}', and any blanks just inside
        the braces.  */
     --p;
-    while (c_isspace ((unsigned char) *p))
+    while (c_isspace (*p))
       --p;
     p[1] = '\0';
     ++decl;
-    while (c_isspace ((unsigned char) *decl))
+    while (c_isspace (*decl))
       ++decl;
   }
 

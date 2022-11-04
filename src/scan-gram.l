@@ -683,7 +683,7 @@ eqopt    ({sp}=)?
   \\(.|{eol})      {
     char const *p = yytext + 1;
     /* Quote only if escaping won't make the character visible.  */
-    if (c_isspace ((unsigned char) *p) && c_isprint ((unsigned char) *p))
+    if (c_isspace (*p) && c_isprint (*p))
       p = quote (p);
     else
       p = quotearg_style_mem (escape_quoting_style, p, 1);
