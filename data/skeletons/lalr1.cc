@@ -986,6 +986,7 @@ b4_dollar_popdef])[]dnl
   yyreduce:
     yylen = yyr2_[yyn];
     {
+      YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
       stack_symbol_type yylhs;
       yylhs.state = yy_lr_goto_state_ (yystack_[yylen].state, yyr1_[yyn]);]b4_variant_if([[
       /* Variants are always initialized to an empty instance of the
@@ -1038,6 +1039,7 @@ b4_dollar_popdef])[]dnl
 
       // Shift the result of the reduction.
       yypush_ (YY_NULLPTR, YY_MOVE (yylhs));
+      YY_IGNORE_MAYBE_UNINITIALIZED_END
     }
     goto yynewstate;
 
