@@ -565,6 +565,7 @@ print_html (void)
   int status
     = execute (argv[0],
                argv[0], argv,
+               /* dll_dirs */ NULL,
                /* directory */ NULL,
                /* ignore_sigpipe */ false,
                /* null_stdin, null_stdout, null_stderr */ true, true, true,

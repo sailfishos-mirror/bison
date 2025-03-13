@@ -808,6 +808,7 @@ output_skeleton (void)
       }
 
     pid = create_pipe_bidi ("m4", m4, argv,
+                            /* dll_dirs */ NULL,
                             /* directory */ NULL,
                             /* null_stderr */ false,
                             /* slave_process */ true,
