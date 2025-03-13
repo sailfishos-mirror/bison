@@ -53,14 +53,17 @@ fixit_new (location const *loc, char const* fix)
 }
 
 static int
-fixit_cmp (const  fixit *a, const fixit *b)
+fixit_cmp (void const *va, void const *vb)
 {
+  fixit const *a = va;
+  fixit const *b = vb;
   return location_cmp (a->location, b->location);
 }
 
 static void
-fixit_free (fixit *f)
+fixit_free (void const *vf)
 {
+  fixit *f = deconst (vf);
   free (f->fix);
   free (f);
 }
@@ -84,13 +87,10 @@ void
 fixits_register (location const *loc, char const* fix)
 {
   if (!fixits)
-    fixits = gl_list_create_empty (GL_ARRAY_LIST,
-                                   /* equals */ NULL,
-                                   /* hashcode */ NULL,
-                                   (gl_listelement_dispose_fn) fixit_free,
-                                   true);
+    fixits = gl_list_create_empty (GL_ARRAY_LIST, NULL, NULL,
+                                   fixit_free, true);
   fixit *f = fixit_new (loc, fix);
-  gl_sortedlist_add (fixits, (gl_listelement_compar_fn) fixit_cmp, f);
+  gl_sortedlist_add (fixits, fixit_cmp, f);
   if (feature_flag & feature_fixit)
     fixit_print (f, stderr);
 }

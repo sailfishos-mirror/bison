@@ -69,7 +69,7 @@ const char *skeleton = NULL;
 int language_prio = default_prio;
 struct bison_language const *language = &valid_languages[0];
 
-typedef int* (xargmatch_fn) (const char *context, const char *arg);
+typedef int const *(xargmatch_fn) (char const *context, char const *arg);
 
 void
 set_yacc (location loc)
@@ -164,7 +164,7 @@ flags_argmatch (const char *opt,
  */
 #define FLAGS_ARGMATCH(FlagName, Args, All)                             \
   flags_argmatch ("--" #FlagName,                                       \
-                  (xargmatch_fn*) argmatch_## FlagName ## _value,       \
+                  argmatch_ ## FlagName ## _value,                      \
                   argmatch_ ## FlagName ## _usage,                      \
                   All, &FlagName ## _flag, Args)
 
@@ -179,7 +179,7 @@ enum color
     color_auto
   };
 
-ARGMATCH_DEFINE_GROUP (color, enum color)
+ARGMATCH_DEFINE_GROUP (color, int)
 
 static const argmatch_color_doc argmatch_color_docs[] =
 {
@@ -215,7 +215,7 @@ const argmatch_color_group_type argmatch_color_group =
 | --report's handling.  |
 `----------------------*/
 
-ARGMATCH_DEFINE_GROUP (report, enum report)
+ARGMATCH_DEFINE_GROUP (report, int)
 
 static const argmatch_report_doc argmatch_report_docs[] =
 {
@@ -256,7 +256,7 @@ const argmatch_report_group_type argmatch_report_group =
 | --trace's handling.  |
 `---------------------*/
 
-ARGMATCH_DEFINE_GROUP (trace, enum trace)
+ARGMATCH_DEFINE_GROUP (trace, int)
 
 static const argmatch_trace_doc argmatch_trace_docs[] =
 {
@@ -319,7 +319,7 @@ const argmatch_trace_group_type argmatch_trace_group =
 | --feature's handling.  |
 `-----------------------*/
 
-ARGMATCH_DEFINE_GROUP (feature, enum feature)
+ARGMATCH_DEFINE_GROUP (feature, int)
 
 static const argmatch_feature_doc argmatch_feature_docs[] =
 {

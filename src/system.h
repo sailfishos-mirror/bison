@@ -308,4 +308,13 @@ obstack_escape (struct obstack* obs, const char *cp)
       }                                         \
   } while (0)
 
+/* Gnulib generic list functions sometimes want args to be void const *.
+   We sometimes want void *, for 'free', or possibly because we plan
+   to cheat and modify the storage.  Cast to satisfy C's static checking.  */
+static inline void *
+deconst (void const *p)
+{
+  return (void *) p;
+}
+
 #endif  /* ! BISON_SYSTEM_H */
