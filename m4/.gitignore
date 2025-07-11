@@ -52,6 +52,7 @@
 /ffsl.m4
 /filenamecat.m4
 /findprog-in.m4
+/flexmember.m4
 /float_h.m4
 /fopen.m4
 /fpending.m4
@@ -130,6 +131,7 @@
 /locale-ja.m4
 /locale-zh.m4
 /locale_h.m4
+/localeconv.m4
 /lock.m4
 /longlong.m4
 /lstat.m4
@@ -138,6 +140,7 @@
 /math_h.m4
 /mbchar.m4
 /mbfile.m4
+/mbiter.m4
 /mbrtoc32.m4
 /mbrtowc.m4
 /mbsinit.m4
@@ -217,6 +220,7 @@
 /stat.m4
 /std-gnu11.m4
 /stdalign.m4
+/stdckdint_h.m4
 /stddef_h.m4
 /stdint.m4
 /stdint_h.m4
@@ -256,6 +260,7 @@
 /uninorm_h.m4
 /unistd-safer.m4
 /unistd_h.m4
+/unitypes_h.m4
 /unlink.m4
 /unlocked-io.m4
 /vararrays.m4
@@ -272,6 +277,7 @@
 /warn-on-use.m4
 /warnings.m4
 /wchar_h.m4
+/wchar_t.m4
 /wctype_h.m4
 /wcwidth.m4
 /wint_t.m4
