@@ -54,6 +54,15 @@ if test -x "$abs_medir/$me"; then
 elif test -f "$abs_medir/$me.class"; then
     prog ()
     {
+        # In Cygwin-based environments, the Java implementation still is a
+        # native Windows Java.  Therefore we need to convert the elements
+        # of the class path from Cygwin syntax to native Windows syntax.
+        # The javaexec.sh script does not do this for us.
+        case `uname -s` in
+            CYGWIN*)
+                abs_medir=`cygpath -w "$abs_medir"`
+                ;;
+        esac
         "$SHELL" "$cwd/javaexec.sh" -cp "$abs_medir" "$me" "$@"
     }
 else
