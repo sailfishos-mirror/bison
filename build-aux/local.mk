@@ -18,6 +18,7 @@ EXTRA_DIST +=					\
   build-aux/Darwin.valgrind			\
   build-aux/Linux.valgrind			\
   build-aux/cross-options.pl			\
+  build-aux/epsf.tex				\
   build-aux/move-if-change			\
   build-aux/prev-version.txt			\
   build-aux/update-b4-copyright
