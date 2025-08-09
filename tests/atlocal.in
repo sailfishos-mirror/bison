@@ -104,6 +104,10 @@ fi
 # Empty if no Java VM was found
 : ${CONF_JAVA='@CONF_JAVA@'}
 
+# An initialization for Java tests.
+lf='
+'
+
 # We need egrep and perl.
 : ${EGREP='@EGREP@'}
 : ${PERL='@PERL@'}
