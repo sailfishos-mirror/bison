@@ -422,12 +422,12 @@ Diagnostics:\n\
 Tuning the Parser:\n\
   -L, --language=LANGUAGE          specify the output programming language\n\
   -S, --skeleton=FILE              specify the skeleton to use\n\
-  -t, --debug                      instrument the parser for tracing\n\
+  -t, --debug                      instrument the parser for tracing;\n\
                                    same as '-Dparse.trace'\n\
       --locations                  enable location support\n\
   -D, --define=NAME[=VALUE]        similar to '%define NAME VALUE'\n\
   -F, --force-define=NAME[=VALUE]  override '%define NAME VALUE'\n\
-  -p, --name-prefix=PREFIX         prepend PREFIX to the external symbols\n\
+  -p, --name-prefix=PREFIX         prepend PREFIX to the external symbols;\n\
                                    deprecated by '-Dapi.prefix={PREFIX}'\n\
   -l, --no-lines                   don't generate '#line' directives\n\
   -k, --token-table                include a table of token names\n\
@@ -443,7 +443,7 @@ Output Files:\n\
       --report-file=FILE        write report to FILE\n\
   -v, --verbose                 same as '--report=state'\n\
   -b, --file-prefix=PREFIX      specify a PREFIX for output files\n\
-  -o, --output=FILE             leave output to FILE\n\
+  -o, --output=FILE             output to FILE\n\
   -g, --graph[=FILE]            also output a graph of the automaton\n\
       --html[=FILE]             also output an HTML report of the automaton\n\
   -x, --xml[=FILE]              also output an XML report of the automaton\n\
