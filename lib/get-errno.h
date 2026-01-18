@@ -1,6 +1,6 @@
 /* get-errno.h - get and set errno.
 
-   Copyright (C) 2002, 2009-2015, 2018-2022, 2025 Free Software
+   Copyright (C) 2002, 2009-2015, 2018-2022, 2025-2026 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify

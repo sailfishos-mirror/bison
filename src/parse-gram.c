@@ -2,7 +2,7 @@
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2022, 2025 Free
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2022, 2025-2026 Free
    Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify

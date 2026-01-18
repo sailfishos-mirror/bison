@@ -1,6 +1,6 @@
 /* Find and resolve or report lookahead conflicts for bison,
 
-   Copyright (C) 1984, 1989, 1992, 2000-2015, 2018-2022, 2025 Free
+   Copyright (C) 1984, 1989, 1992, 2000-2015, 2018-2022, 2025-2026 Free
    Software Foundation, Inc.
 
    This file is part of Bison, the GNU Compiler Compiler.
