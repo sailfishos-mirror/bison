@@ -6026,6 +6026,7 @@ Introduced in Bison 3.8.
 
 @deffn {Directive} %header @var{header-file}
 Same as above, but save in the file @file{@var{header-file}}.
+The @var{header-file} name should not contain slashes.
 @end deffn
 
 @deffn {Directive} %language "@var{language}"
@@ -6079,6 +6080,7 @@ file, treating it as an independent source file in its own right.
 
 @deffn {Directive} %output "@var{file}"
 Generate the parser implementation in @file{@var{file}}.
+The @var{file} name should not contain slashes.
 @end deffn
 
 @deffn {Directive} %pure-parser

@@ -1,9 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.8.2.30-82269.  */
+/* A Bison parser, made by GNU Bison 3.8.2.66-3169-modified.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2022, 2025-2026 Free
-   Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2022, 2025-2026 Free Software
+   Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@
 #define YYBISON 30802
 
 /* Bison version string.  */
-#define YYBISON_VERSION "3.8.2.30-82269"
+#define YYBISON_VERSION "3.8.2.66-3169-modified"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -273,8 +273,11 @@ typedef enum yysymbol_kind_t yysymbol_kind_t;
      string from the scanner (should be CODE). */
   static char const *translate_code_braceless (char *code, location loc);
 
+  /* Is FILE a valid output file name?  */
+  static bool valid_output_file_name (char const *file);
+
   /* Handle a %header directive.  */
-  static void handle_header (char const *value);
+  static void handle_header (location const *loc, char const *value);
 
   /* Handle a %error-verbose directive.  */
   static void handle_error_verbose (location const *loc, char const *directive);
@@ -658,19 +661,19 @@ union yyalloc
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   310,   310,   319,   320,   324,   325,   331,   335,   340,
-     341,   342,   343,   344,   345,   350,   355,   356,   357,   358,
-     359,   360,   360,   361,   362,   363,   364,   365,   366,   367,
-     368,   372,   373,   382,   383,   387,   398,   402,   406,   414,
-     424,   425,   435,   436,   442,   455,   455,   460,   460,   465,
-     465,   470,   480,   481,   482,   483,   488,   489,   493,   494,
-     499,   500,   504,   505,   509,   510,   511,   524,   533,   537,
-     541,   549,   550,   554,   567,   568,   573,   574,   575,   593,
-     597,   601,   609,   611,   616,   623,   633,   637,   641,   649,
-     655,   668,   669,   675,   676,   677,   684,   684,   692,   693,
-     694,   699,   702,   704,   706,   708,   710,   712,   714,   716,
-     718,   723,   724,   733,   757,   758,   759,   760,   772,   774,
-     798,   803,   804,   809,   817,   818
+       0,   314,   314,   323,   324,   328,   329,   335,   339,   344,
+     345,   346,   347,   348,   349,   354,   359,   360,   361,   362,
+     363,   372,   372,   373,   374,   375,   376,   377,   378,   379,
+     380,   384,   385,   394,   395,   399,   410,   414,   418,   426,
+     436,   437,   447,   448,   454,   467,   467,   472,   472,   477,
+     477,   482,   492,   493,   494,   495,   500,   501,   505,   506,
+     511,   512,   516,   517,   521,   522,   523,   536,   545,   549,
+     553,   561,   562,   566,   579,   580,   585,   586,   587,   605,
+     609,   613,   621,   623,   628,   635,   645,   649,   653,   661,
+     667,   680,   681,   687,   688,   689,   696,   696,   704,   705,
+     706,   711,   714,   716,   718,   720,   722,   724,   726,   728,
+     730,   735,   736,   745,   769,   770,   771,   772,   784,   786,
+     810,   815,   816,   821,   829,   830
 };
 #endif
 
@@ -2099,7 +2102,7 @@ yyreduce:
     break;
 
   case 9: /* prologue_declaration: "%header" string.opt  */
-                                   { handle_header ((yyvsp[0].yykind_75)); }
+                                   { handle_header (&(yylsp[0]), (yyvsp[0].yykind_75)); }
     break;
 
   case 10: /* prologue_declaration: "%error-verbose"  */
@@ -2149,7 +2152,14 @@ yyreduce:
     break;
 
   case 20: /* prologue_declaration: "%output" "string"  */
-                                { spec_outfile = unquote ((yyvsp[0].STRING)); gram_scanner_last_string_free (); }
+    {
+      char *file = unquote ((yyvsp[0].STRING));
+      if (valid_output_file_name (file))
+        spec_outfile = file;
+      else
+        complain (&(yylsp[0]), complaint, _("invalid %%output file name ignored"));
+      gram_scanner_last_string_free ();
+    }
     break;
 
   case 21: /* $@1: %empty  */
@@ -2969,14 +2979,24 @@ add_param (param_type type, char *decl, location loc)
 }
 
 
+static bool
+valid_output_file_name (char const *file)
+{
+  return !strchr (file, '/');
+}
+
+
 static void
-handle_header (char const *value)
+handle_header (location const *loc, char const *value)
 {
   header_flag = true;
   if (value)
     {
       char *file = unquote (value);
-      spec_header_file = xstrdup (file);
+      if (valid_output_file_name (file))
+        spec_header_file = xstrdup (file);
+      else
+        complain (loc, complaint, _("invalid %%header file name ignored"));
       gram_scanner_last_string_free ();
       unquote_free (file);
     }
